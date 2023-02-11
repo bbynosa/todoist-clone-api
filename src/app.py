@@ -12,14 +12,17 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 ## TODO: Add try-catch blocks to return HTTP 500 for server-side errors
-@app.get("/tasks")
+## TODO: Find a "cleaner" way to prefix the "/api" path on these routes
+## TODO: Is there an async-await in Flask?
+
+@app.get("/api/tasks")
 def list():
     query_result = Task.query.all()
     tasks = [i.serialize for i in query_result]
     return tasks
 
 
-@app.get("/tasks/<id>")
+@app.get("/api/tasks/<id>")
 def get(id):
     task = Task.query.get(id)
 
@@ -29,7 +32,7 @@ def get(id):
     return task.serialize
 
 
-@app.post("/tasks")
+@app.post("/api/tasks")
 def add():
     req = request.get_json()
     new_task = Task(
@@ -49,7 +52,7 @@ def add():
     return new_task.serialize, 201
 
 
-@app.put("/tasks/<id>")
+@app.put("/api/tasks/<id>")
 def edit(id):
     req = request.get_json()
     task = Task.query.get(id)
@@ -70,7 +73,7 @@ def edit(id):
     return "", 200
 
 
-@app.delete("/tasks/<id>")
+@app.delete("/api/tasks/<id>")
 def delete(id):
     task = Task.query.get(id)
     
