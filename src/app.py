@@ -1,85 +1,84 @@
-import json
-import boto3
-import os
-
-from flask import Flask
-from flask import request
-from boto3.dynamodb.conditions import Key
+from flask import Flask, request
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 from flask_cors import CORS
+from flask_migrate import Migrate
+from config import app, db
+from models import Task
 
-table_name = os.environ["DYNAMODB_TABLE_NAME"]
-dynamodb_endpoint = os.environ["DYNAMODB_SERVICE_ENDPOINT"]
-dynamodb = boto3.resource('dynamodb', endpoint_url=dynamodb_endpoint)
-table = dynamodb.Table(table_name)
-
-app = Flask(__name__)
-
-CORS(app)
 
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 
-
-@app.get("/todos")
+## TODO: Add try-catch blocks to return HTTP 500 for server-side errors
+@app.get("/tasks")
 def list():
-    res = table.scan()
+    query_result = Task.query.all()
+    tasks = [i.serialize for i in query_result]
+    return tasks
 
-    return res["Items"]
 
-
-@app.get("/todos/<id>")
+@app.get("/tasks/<id>")
 def get(id):
-    res = table.query(
-        KeyConditionExpression=Key('id').eq(id)
-    )
+    task = Task.query.get(id)
 
-    return res["Items"][0]
+    if task == None:
+        return "", 404
+
+    return task.serialize
 
 
-@app.post("/todos")
-def create():
+@app.post("/tasks")
+def add():
     req = request.get_json()
-
-    table.put_item(
-        Item={
-            'id': req['id'],
-            'name': req['name'],
-            'status': req['status'],
-            'priority': req['priority'],
-            'notes': req['notes'],
-            'created_by': req['created_by'],
-            'assigned_to': req['assigned_to']
-        }
+    new_task = Task(
+        id=req["id"],
+        name=req["name"],
+        status=req["status"],
+        priority=req["priority"],
+        notes=req["notes"],
+        created_by=req["created_by"],
+        assigned_to=req["assigned_to"],
     )
 
-    return "", 201
+    db.session.add(new_task)
+    db.session.commit()
+
+    ##TODO: Following HTTP semantics, return a 'Location' header with URI of the new resource
+    return new_task.serialize, 201
 
 
-@app.put("/todos/<id>")
+@app.put("/tasks/<id>")
 def edit(id):
     req = request.get_json()
+    task = Task.query.get(id)
+    
+    if task == None:
+        return "", 404
 
-    table.put_item(
-        Item={
-            'id': id,
-            'name': req['name'],
-            'status': req['status'],
-            'priority': req['priority'],
-            'notes': req['notes'],
-            'created_by': req['created_by'],
-            'assigned_to': req['assigned_to']
-        }
-    )
+    task.name = req['name']
+    task.status = req['status']
+    task.priority = req['priority']
+    task.notes = req['notes']
+    task.created_by = req['created_by']
+    task.assigned_to = req['assigned_to']
+
+    db.session.add(task)
+    db.session.commit()
+
     return "", 200
 
 
-@app.delete("/todos/<id>")
+@app.delete("/tasks/<id>")
 def delete(id):
-    table.delete_item(
-        Key={
-            'id': id
-        }
-    )
+    task = Task.query.get(id)
+    
+    if task == None:
+        return "", 404
+
+    db.session.delete(task)
+    db.session.commit()
 
     return "", 204
+
