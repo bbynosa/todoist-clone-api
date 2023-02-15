@@ -4,13 +4,16 @@ from config import db
 class Task(db.Model):
     __tablename__ = 'tasks'
     ## TODO: Find if there's a sqlalchemy data type for UUIDs
+    ## TODO: Is there a way to auto-generate UUIDs on the SQL-level?
     id = db.Column(db.String(50), primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.String(30), nullable=False)
-    priority = db.Column(db.String(30), nullable=False)
-    notes = db.Column(db.String(500), nullable=True)
-    created_by = db.Column(db.String(50), nullable=False)
-    assigned_to = db.Column(db.String(50), nullable=True)
+    name = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.String(500), nullable=True)
+    priority = db.Column(db.Integer, nullable=False)
+    author = db.Column(db.String(50), nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False)
+    is_complete = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
         return f"<Task {self.name}>"
@@ -21,9 +24,11 @@ class Task(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "status": self.status,
+            "description": self.description,
             "priority": self.priority,
-            "notes": self.notes,
-            "created_by": self.created_by,
-            "assigned_to": self.assigned_to,
+            "author": self.author,
+            "due_date": self.due_date,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "is_complete": self.is_complete
         }

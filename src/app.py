@@ -5,6 +5,8 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from config import app, db
 from models import Task
+import uuid
+from datetime import datetime
 
 
 @app.route("/")
@@ -36,13 +38,15 @@ def get(id):
 def add():
     req = request.get_json()
     new_task = Task(
-        id=req["id"],
-        name=req["name"],
-        status=req["status"],
-        priority=req["priority"],
-        notes=req["notes"],
-        created_by=req["created_by"],
-        assigned_to=req["assigned_to"],
+        id = str(uuid.uuid4()),
+        name = req["name"],
+        description = req["description"],
+        priority = req["priority"],
+        author = req["author"],
+        due_date = req["due_date"],
+        created_at = datetime.now(), ## TODO: Maybe include timezone?
+        updated_at = datetime.now(),
+        is_complete = req["is_complete"]
     )
 
     db.session.add(new_task)
@@ -61,11 +65,12 @@ def edit(id):
         return "", 404
 
     task.name = req['name']
-    task.status = req['status']
+    task.description = req['description']
     task.priority = req['priority']
-    task.notes = req['notes']
-    task.created_by = req['created_by']
-    task.assigned_to = req['assigned_to']
+    task.author = req['author']
+    task.due_date = req['due_date']
+    task.updated_at = datetime.now()
+    task.is_complete = req['is_complete']
 
     db.session.add(task)
     db.session.commit()
