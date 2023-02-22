@@ -40,6 +40,6 @@ flask --app src\app db revision --message "<what is inside this migration>"
 
 ### Then update database
 ```
-flask -app src\app db updates
+flask --app src\app db upgrade
 ```
 
