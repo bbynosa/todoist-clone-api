@@ -1,13 +1,12 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import func
 from flask_cors import CORS
 from flask_migrate import Migrate
 from config import app, db
 from models import Task
 import uuid
 from datetime import datetime
-
+from sqlalchemy import asc
 
 @app.route("/")
 def hello_world():
@@ -19,7 +18,8 @@ def hello_world():
 
 @app.get("/api/tasks")
 def list():
-    query_result = Task.query.all()
+    ## Default order is by created_at ASC
+    query_result = Task.query.order_by(asc(Task.created_at)).all()
     tasks = [i.serialize for i in query_result]
     return tasks
 
