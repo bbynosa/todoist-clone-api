@@ -1,7 +1,9 @@
 ## Getting started
+Commands below should be run on a shell terminal (PowerShell window or Command Prompt)
 ### Pre-requisites
 1. Latest Python [version](https://www.python.org/downloads/)
 2. [MySQL Community Edition](https://dev.mysql.com/downloads/installer/)
+- Create a database named `todoist-clone` on your local MySQL server
 
 ### Create a virtual environment (venv)
 ```
